@@ -18,5 +18,11 @@ Imports:
     ggplot2,
     purrr
 Suggests: 
+    rmarkdown,
+    knitr,
     ranger,
-    rrr
+    rrr,
+    mvabund,
+    scales,
+    tidyverse
+VignetteBuilder: knitr

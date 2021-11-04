@@ -1,0 +1,113 @@
+---
+title: "Introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>", fig.width=5, fig.height=4, message=FALSE, warning = FALSE
+)
+```
+
+```{r setup}
+library(manyModelViz)
+library(tidyverse)
+library(scales)
+```
+
+
+`if(!require(remotes)) install.packages('remotes')` \
+`remotes::install_github('cbhurley/manyModelViz', build_vignettes = TRUE)`
+
+
+
+The purpose of this package is displays for showing variable contributions to many models.
+
+### Tobacco, lm
+
+The variables and responses are ordered by increasing total in the last category
+```{r}
+library(rrr) # for the data
+fits <- map(tobacco[,1:3], ~ lm(.x ~ ., data=tobacco[,4:9]))
+cols <- c("blue", "cyan", "grey95")
+modelHeatmap(fits, "term", "response", "p.value", xorder="increasing", yorder="increasing")+  
+     scale_fill_manual(values = cols)
+
+```
+
+### Tobacco, random forest
+
+```{r}
+library(rrr) # for the data
+library(ranger)
+rfs <- map(tobacco[,1:3], ~
+                      ranger(.x ~ ., data=rrr::tobacco[,4:9], importance="permutation"))
+  rfdf <- map_dfr(rfs, ~ {
+    imp <- importance(.x)
+    terms <- names(imp)
+    names(imp) <- NULL
+    data.frame( term=terms,importance=imp)
+  }, .id="response")
+modelHeatmap(rfdf, "term", "response", "importance", xorder="decreasing", yorder="decreasing")
+ 
+```
+
+### spider from mvabund
+
+```{r}
+library(mvabund)
+data(spider)
+spiddat <- log(spider$abund+1)
+spiddat <- mvabund(spiddat)
+X <- spider$x
+
+lm.spider <- manylm(spiddat~X)
+coefs <- as.data.frame(coef(lm.spider))[-1,] %>% 
+  mutate(xvars = colnames(X))%>% 
+  pivot_longer(-xvars, names_to= "response", values_to = "coef")
+
+modelHeatmap(coefs, "xvars", "response", "coef")  + scale_fill_gradient2(
+   low = muted("purple"),
+  mid = "white",
+  high = muted("green"),
+  midpoint = 0
+)
+# reorder by increasing
+# modelHeatmap(coefs, "xvars", "response", "coef", xorder="increasing", yorder="increasing")  + 
+#   scale_fill_gradient2(
+#   low = scales::muted("purple"),
+#   mid = "white",
+#   high = scales::muted("green"),
+#   midpoint = 0
+# )
+```
+
+```{r}
+presence <- spider$abund
+presence[presence>0]<- 1
+fits <- map(presence, ~ glm(.x ~ ., family="binomial",data=data.frame(spider$x), maxit=100))
+cols <- c("blue", "cyan", "grey95")
+modelHeatmap(fits, "term", "response", "p.value", xorder="increasing", yorder="increasing")+  
+  scale_fill_brewer(palette = "Purples", direction=-1)
+
+```
+
+```{r}
+rfs <- map(presence, ~
+                      ranger(.x ~ ., data=data.frame(spider$x), importance="permutation"))
+rfdf <- map_dfr(rfs, ~ {
+    imp <- importance(.x)
+    terms <- names(imp)
+    names(imp) <- NULL
+    data.frame( term=terms,importance=pmax(imp,0.001))
+  }, .id="response")
+modelHeatmap(rfdf, "term", "response", "importance", xorder="decreasing", yorder="decreasing",
+             zlevels = c(0,.1,.16,.21)) +  
+  scale_fill_brewer(palette = "Purples")
+```
+
