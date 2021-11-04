@@ -1,0 +1,22 @@
+Package: manyModelViz
+Title: Multiple response, multiple model visualisations
+Version: 0.0.0.9000
+Authors@R: c(
+    person(given = "Catherine", family = "Hurley", email = "catherine.hurley@mu.ie", role = c("aut", "cre")),
+    person(given = "Bharvi", family = "Dhall", email = "bharvi.dhall@mu.ie", role = c("aut")),
+    person(given = "Katarina", family = "Domijan", email = "katarina.domijan@mu.ie", role = c("aut"))
+    )
+Description: This package provides a suite of plots for comparing models fit to a set of predictors.
+License: GPL (>=2)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports: 
+    broom,
+    car,
+    dplyr,
+    ggplot2,
+    purrr
+Suggests: 
+    ranger,
+    rrr
