@@ -9,7 +9,7 @@
 #' @param xorder "none" means no ordering. Otherwise, use "increasing"/"decreasing" for ordering by mean z, or specify xorder as a vector of xlevels.
 #' @param yorder "none" means no ordering. Otherwise, use "increasing"/"decreasing" for ordering by mean z, or specify xorder as a vector of xlevels.
 #' @param zlevels If not NULL, specifies cut levels for the z variable
-#' @details If zlevels is present, then ordering is done by count in all but the last category
+#' @details If zlevels is present, then ordering is done by a weighted mean of the cateegory levels.
 #' @return a ggplot
 #' @export
 #'
@@ -64,7 +64,7 @@ modelHeatmap <- function(d, x,y,z,
       xord <- names(sort(tapply(d[[z]], d[[x]], mean,na.rm=TRUE)))
     else  xord <- names(sort(tapply(d[[z]], d[[x]], function(z1) {
       tab <- table(z1)
-      sum((1:length(tab))*tab)
+      weighted.mean(tab, 1:length(tab), na.rm=TRUE)
     })))
 
     if (xorder== "decreasing") xord <- rev(xord)
@@ -77,7 +77,7 @@ modelHeatmap <- function(d, x,y,z,
       yord <- names(sort(tapply(d[[z]], d[[y]], mean,na.rm=TRUE)))
     else  yord <- names(sort(tapply(d[[z]], d[[y]], function(z1) {
       tab <- table(z1)
-      sum((1:length(tab))*tab)
+      weighted.mean(tab, 1:length(tab), na.rm=TRUE)
     })))
 
     if (yorder== "decreasing") yord <- rev(yord)
