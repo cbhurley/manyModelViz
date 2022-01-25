@@ -8,8 +8,9 @@
 #' @param z Used for heatmap fill
 #' @param xorder "none" means no ordering. Otherwise, use "increasing"/"decreasing" for ordering by mean z, or specify xorder as a vector of xlevels.
 #' @param yorder "none" means no ordering. Otherwise, use "increasing"/"decreasing" for ordering by mean z, or specify xorder as a vector of xlevels.
+#' @param zfunction If not NULL, applied to z values
 #' @param zlevels If not NULL, specifies cut levels for the z variable
-#' @details If zlevels is present, then ordering is done by a weighted mean of the cateegory levels.
+#' @details If zlevels is present, then ordering is done by a weighted mean of the category levels.
 #' @return a ggplot
 #' @export
 #'
@@ -20,6 +21,9 @@
 #'    fits <- purrr::map(rrr::tobacco[,1:3], ~ lm(.x ~ ., data=rrr::tobacco[,4:9]))
 #'    cols <- c("blue", "cyan", "grey95")
 #'    modelHeatmap(fits, "term", "response", "p.value", xorder="increasing", yorder="increasing")+
+#'       ggplot2::scale_fill_manual(values = cols)
+#'    modelHeatmap(fits, "term", "response", "p.value", xorder="increasing", yorder="increasing",
+#'    zfunction=function(p) p.adjust(p, method = "BH"))+
 #'       ggplot2::scale_fill_manual(values = cols)
 #'
 #'    if (requireNamespace("ranger", quietly = TRUE)){
@@ -41,6 +45,7 @@
 modelHeatmap <- function(d, x,y,z,
                          xorder= "none",
                          yorder= "none",
+                         zfunction=NULL,
                          zlevels=NULL){
 
   if (z == "p.value" & is.null(zlevels)) zlevels <- c(0,0.01,0.05,1)
@@ -54,7 +59,7 @@ modelHeatmap <- function(d, x,y,z,
   if (!(x %in% names(d))) stop("Input x must be a variable in the data.frame")
   if (!(y %in% names(d))) stop("Input y must be a variable in the data.frame")
   if (!(z %in% names(d))) stop("Input z must be a variable in the data.frame")
-
+  if (! is.null(zfunction)) d[[z]] <- zfunction(d[[z]])
 
   if (! is.null(zlevels))
     d[[z]] <- cut(d[[z]], breaks = zlevels)
