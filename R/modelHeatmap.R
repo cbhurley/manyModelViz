@@ -48,7 +48,7 @@ modelHeatmap <- function(d, x,y,z,
                          zfunction=NULL,
                          zlevels=NULL){
 
-  if (z == "p.value" & is.null(zlevels)) zlevels <- c(0,0.01,0.05,1)
+  if (identical(z, "p.value") & is.null(zlevels)) zlevels <- c(0,0.01,0.05,1)
   if (!is.data.frame(d)){
     fits <- d
     d <- purrr::map_dfr(fits, ~ broom::tidy(car::Anova(.x)), .id="response")
@@ -64,7 +64,7 @@ modelHeatmap <- function(d, x,y,z,
   if (! is.null(zlevels))
     d[[z]] <- cut(d[[z]], breaks = zlevels)
 
-  if (xorder== "increasing" | xorder == "decreasing"){
+  if (identical(xorder, "increasing") | identical(xorder,"decreasing")){
     if (is.numeric(d[[z]]))
       xord <- names(sort(tapply(d[[z]], d[[x]], mean,na.rm=TRUE)))
     else  xord <- names(sort(tapply(d[[z]], d[[x]], function(z1) {
@@ -77,7 +77,7 @@ modelHeatmap <- function(d, x,y,z,
 
   }
 
-  if (yorder== "increasing" | yorder == "decreasing"){
+  if (identical(yorder, "increasing") | identical(yorder,"decreasing")){
     if (is.numeric(d[[z]]))
       yord <- names(sort(tapply(d[[z]], d[[y]], mean,na.rm=TRUE)))
     else  yord <- names(sort(tapply(d[[z]], d[[y]], function(z1) {
